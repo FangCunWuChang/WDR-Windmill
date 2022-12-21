@@ -3,7 +3,7 @@
  * @brief           Windmill LED light controller.
  * @author          Wu Chang
  * @copyright       (C)2022 WDR Team. All Rights Reserved.
- * @date            2022-12-18
+ * @date            2022-12-21
  */
 
 #include "windmill.h"
@@ -98,15 +98,15 @@ static struct Windmill_Loop_Counter windmill_current_active_loop_counter = {0, 0
  *
  * @param list      The blade state list.
  *
- * @return          Return the active blade id. If can't find an active blade, then return Windmill_Blade_COUNT.
+ * @return          Return the active blade id. If can't find an active blade, then return Windmill_Blade_COUNT + 1.
  */
 static enum Windmill_Blade_ID windmill_find_active_blade(const enum Windmill_Blade_State* list) {
-    if (list == NULL) { return Windmill_Blade_COUNT; }
+    if (list == NULL) { return Windmill_Blade_COUNT + 1; }
 
     for (int i = 0; i < Windmill_Blade_COUNT; i++){
         if (list[i] == Windmill_Blade_State_Active) { return i; }
     }
-    return Windmill_Blade_COUNT;
+    return Windmill_Blade_COUNT + 1;
 }
 
 /**
@@ -115,17 +115,17 @@ static enum Windmill_Blade_ID windmill_find_active_blade(const enum Windmill_Bla
  * @param list      The blade state list.
  *
  * @return          Return the blade id to active.
- *                  If can't find a blade to active or a blade is already active, then return Windmill_Blade_COUNT.
+ *                  If can't find a blade to active or a blade is already active, then return Windmill_Blade_COUNT + 1.
  */
 static enum Windmill_Blade_ID windmill_find_next_active_blade(const enum Windmill_Blade_State* list) {
-    if (list == NULL) { return Windmill_Blade_COUNT; }
+    if (list == NULL) { return Windmill_Blade_COUNT + 1; }
 
     /** Find all off blade */
     int off_blade_count = 0;
     for (int i = 0; i < Windmill_Blade_COUNT; i++){
         if (list[i] == Windmill_Blade_State_Off) { off_blade_count++; }
     }
-    if (off_blade_count == 0) { return Windmill_Blade_COUNT; }
+    if (off_blade_count == 0) { return Windmill_Blade_COUNT + 1; }
 
     /** Decide which blade to active */
     int next_blade_id = rand() % off_blade_count;
@@ -136,7 +136,7 @@ static enum Windmill_Blade_ID windmill_find_next_active_blade(const enum Windmil
         }
     }
 
-    return Windmill_Blade_COUNT;
+    return Windmill_Blade_COUNT + 1;
 }
 
 /**
@@ -225,6 +225,24 @@ static void windmill_hit_buffer_reset(bool* buffer) {
     }
 }
 
+/**
+ * @brief           Color changed flag.
+ */
+ static bool windmill_color_changed_flag = false;
+
+ /**
+  * @brief          Process color changed event.
+  */
+ static void windmill_process_color_changed_event() {
+     if (windmill_color_changed_flag) {
+         /** Send color for centre */
+         windmill_blade_output(Windmill_Blade_COUNT, Windmill_Blade_State_On);
+
+         /** Reset flag */
+         windmill_color_changed_flag = false;
+     }
+ }
+
 /* ---------------------------- public functions ------------------------------ */
 
 void windmill_process_event() {
@@ -247,6 +265,14 @@ void windmill_process_event() {
     /** Reset hit buffer */
     windmill_hit_buffer_reset(windmill_hit_buffer);
 
+    /** Cheat - Uncomment to cheat. */
+    double per = 0.8;
+    int cheatCount = WINDMILL_CONTROL_GRANULARITY * per;
+    other_blade_hit = false;
+    if (windmill_current_active_loop_counter.count >= cheatCount) {
+        active_blade_hit = false;
+    }
+
     if ((!windmill_is_all_blade_on(windmill_state_list)) && (active_blade_hit || other_blade_hit)) {    /**< Got a hit */
         if (active_blade_hit) {
             /** Set current blade On */
@@ -268,6 +294,9 @@ void windmill_process_event() {
                                      windmill_find_next_active_blade(windmill_state_list),
                                      Windmill_Blade_State_Active);
         }
+        /** Process color changed event */
+        //windmill_process_color_changed_event();
+
         /** Reset counter */
         windmill_loop_counter_reset(&windmill_current_active_loop_counter);
     }
@@ -291,6 +320,9 @@ void windmill_process_event() {
             /** Active a blade */
             windmill_set_blade_state(windmill_state_list, next, Windmill_Blade_State_Active);
 
+            /** Process color changed event */
+            //windmill_process_color_changed_event();
+
             /** Reset counter */
             windmill_loop_counter_reset(&windmill_current_active_loop_counter);
         }
@@ -298,6 +330,10 @@ void windmill_process_event() {
 
     /** Delay until the next event loop cycle */
     HAL_Delay(WINDMILL_BLADE_TIMEOUT / WINDMILL_CONTROL_GRANULARITY);
+}
+
+void windmill_send_color_changed_event() {
+    windmill_color_changed_flag = true;
 }
 
 void windmill_hit(enum Windmill_Blade_ID id) {
@@ -350,6 +386,8 @@ void windmill_init() {
  * @param state         What state you want to output.
  */
 static void windmill_blade_output(enum Windmill_Blade_ID id, enum Windmill_Blade_State state) {
+    if (id > Windmill_Blade_COUNT) { return; }
+
     /** Firstly close all LED */
     WS2_set_surrounding((int)id, false);
     WS2_set_arrows((int)id, false);

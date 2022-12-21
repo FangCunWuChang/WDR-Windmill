@@ -3,7 +3,7 @@
  * @brief           Windmill LED light controller.
  * @author          Wu Chang
  * @copyright       (C)2022 WDR Team. All Rights Reserved.
- * @date            2022-12-18
+ * @date            2022-12-21
  */
 #pragma once
 
@@ -38,7 +38,7 @@ enum Windmill_Blade_ID {
     Windmill_Blade_D,               /**< The blade D */
     Windmill_Blade_E,               /**< The blade E */
 
-    Windmill_Blade_COUNT            /**< The blade count */
+    Windmill_Blade_COUNT            /**< The blade count (The centre light) */
 };
 
 
@@ -47,6 +47,10 @@ enum Windmill_Blade_ID {
  * @brief           Process the event loop of windmill blade event.
  */
 void windmill_process_event();
+/**
+ * @brief           Send color changed event.
+ */
+void windmill_send_color_changed_event();
 
 /**
  * @brief           Raise a windmill blade hit event.

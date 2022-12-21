@@ -37,4 +37,6 @@ void EXTI_reserve_Task(void)
     static bool state = false;
     WS2_control_color((state ? color1 : color2), colorOff);
     state = !state;
+
+    windmill_send_color_changed_event();
 }
