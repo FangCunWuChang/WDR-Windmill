@@ -99,6 +99,33 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   windmill_init();
+    /** Uncomment to debug */
+    /*{
+        /// Init the port
+        WS2_control_init();
+
+        /// Set start color
+        const struct WS2_Color color1 = {32, 172, 0};
+        __attribute__((unused)) const struct WS2_Color color2 = {96, 0, 67};
+        const struct WS2_Color colorOff = {0, 0, 0};
+        WS2_control_color(color1, colorOff);
+
+        /// Close all blade
+        for (int i = 0; i < Windmill_Blade_COUNT; i++) {
+            WS2_control_send((int)i);
+        }
+        HAL_Delay(WINDMILL_BLADE_TIMEOUT / WINDMILL_CONTROL_GRANULARITY);
+
+        /// Open blade
+        for (int i = 0; i < Windmill_Blade_COUNT; i++) {
+            if (i == Windmill_Blade_B) {
+                WS2_set_arrows((int)i, true);
+                WS2_set_surrounding((int)i, true);
+                WS2_control_send((int)i);
+            }
+        }
+        HAL_Delay(WINDMILL_BLADE_TIMEOUT / WINDMILL_CONTROL_GRANULARITY);
+    }*/
   /* USER CODE END 2 */
 
   /* Infinite loop */

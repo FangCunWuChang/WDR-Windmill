@@ -269,9 +269,7 @@ void windmill_process_event() {
     double per = 0.8;
     int cheatCount = WINDMILL_CONTROL_GRANULARITY * per;
     other_blade_hit = false;
-    if (windmill_current_active_loop_counter.count >= cheatCount) {
-        active_blade_hit = false;
-    }
+    active_blade_hit = (windmill_current_active_loop_counter.count >= cheatCount);
 
     if ((!windmill_is_all_blade_on(windmill_state_list)) && (active_blade_hit || other_blade_hit)) {    /**< Got a hit */
         if (active_blade_hit) {
@@ -295,7 +293,7 @@ void windmill_process_event() {
                                      Windmill_Blade_State_Active);
         }
         /** Process color changed event */
-        //windmill_process_color_changed_event();
+        windmill_process_color_changed_event();
 
         /** Reset counter */
         windmill_loop_counter_reset(&windmill_current_active_loop_counter);
@@ -321,7 +319,7 @@ void windmill_process_event() {
             windmill_set_blade_state(windmill_state_list, next, Windmill_Blade_State_Active);
 
             /** Process color changed event */
-            //windmill_process_color_changed_event();
+            windmill_process_color_changed_event();
 
             /** Reset counter */
             windmill_loop_counter_reset(&windmill_current_active_loop_counter);

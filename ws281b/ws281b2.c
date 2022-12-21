@@ -36,7 +36,7 @@ static struct WS2_Port_Config WS2_port_config_list[WS2_Port_COUNT + 1] = {
         { WS2_Port_B, &htim1, TIM_CHANNEL_2,  209, 216, false, false },         /**< Port B0 */
         { WS2_Port_C, &htim3, TIM_CHANNEL_1,  204, 217, false, false },         /**< Port C1 */
         { WS2_Port_D, &htim1, TIM_CHANNEL_4,  205, 217, false, false },         /**< Port D0 */
-        { WS2_Port_E, &htim3, TIM_CHANNEL_3,  202, 217, false, false },         /**< Port E1 */
+        { WS2_Port_E, &htim3, TIM_CHANNEL_3,  202, 216, false, false },         /**< Port E1 */
 
         { WS2_Port_COUNT, &htim3, TIM_CHANNEL_4,  0, 100, true, true }         /**< Port Res1 */
 };
